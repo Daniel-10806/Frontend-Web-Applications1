@@ -1,8 +1,20 @@
-<script setup>
-</script>
-
 <template>
-
+  <div id="app">
+    <MessagePanel />
+  </div>
 </template>
 
-<style scoped></style>
+<script>
+import MessagePanel from './components/messaging/MessagePanel.vue';
+
+
+export default {
+  components: {
+    MessagePanel,
+  },
+};
+</script>
+
+<style>
+
+</style>
