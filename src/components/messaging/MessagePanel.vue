@@ -2,14 +2,19 @@
   <div class="message-panel">
     <div class="side-panel">
       <h2>Messages</h2>
-      <div class="contact" v-for="contact in contacts" :key="contact.id">
+      <div
+          class="contact"
+          v-for="contact in contacts"
+          :key="contact.id"
+          @click="openChat(contact)"
+      >
         <img :src="contact.avatar" alt="Avatar" class="avatar" />
         <p>{{ contact.name }}</p>
       </div>
     </div>
     <div class="main-panel">
       <div class="message-header">
-        <p>{{ activeChat }}</p>
+        <p>{{ activeChat.name }}</p>
       </div>
       <div class="message-content">
         <p v-if="messages.length === 0">This chat is empty</p>
@@ -29,8 +34,7 @@
             <span>Document</span>
           </div>
         </div>
-        <input type="text" placeholder="Send a message..." v-model="newMessage" />
-        <button @click="sendMessage">Send</button>
+        <input type="text" placeholder="Send a message..." v-model="newMessage" @keyup.enter="sendMessage" />
       </div>
     </div>
   </div>
@@ -44,11 +48,11 @@ export default {
     return {
       newMessage: '',
       messages: [],
-      activeChat: 'Monica',
+      activeChat: { id: null, name: '' }, // Añadimos la estructura del chat activo
       contacts: [
-        {id: 1, name: 'Fidel', avatar: 'src/assets/images/avatar1.jpeg'},
-        {id: 2, name: 'Monica', avatar: 'src/assets/images/avatar2.jpg'},
-        {id: 3, name: 'Silvia', avatar: 'src/assets/images/avatar3.png'},
+        { id: 1, name: 'Fidel', avatar: 'src/assets/images/avatar1.jpeg', messages: [{ id: 1, text: 'Hello Fidel!' }] },
+        { id: 2, name: 'Monica', avatar: 'src/assets/images/avatar2.jpg', messages: [{ id: 1, text: 'Hi Monica!' }] },
+        { id: 3, name: 'Silvia', avatar: 'src/assets/images/avatar3.png', messages: [{ id: 1, text: 'Hey Silvia!' }] },
       ],
       showMenu: false,
     };
@@ -59,23 +63,54 @@ export default {
     },
     sendMessage() {
       if (this.newMessage.trim() !== '') {
-        this.messages.push({id: this.messages.length + 1, text: this.newMessage});
+        this.activeChat.messages.push({ id: this.messages.length + 1, text: this.newMessage });
         this.newMessage = '';
+
+        // Desplazar al último mensaje
+        this.$nextTick(() => {
+          const messageContent = document.querySelector('.message-content');
+          messageContent.scrollTop = messageContent.scrollHeight; // Desplazar hacia abajo
+        });
+
       }
     },
-    attachFile(accept) {
+    attachFile(type) {
       const input = document.createElement('input');
       input.type = 'file';
-      input.accept = accept;
+
+      // Ajustar el tipo de archivo según la opción seleccionada
+      if (type === 'document') {
+        input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
+      } else if (type === 'image') {
+        input.accept = 'image/*,video/*';
+      }
+
       input.onchange = (event) => {
         const file = event.target.files[0];
         if (file) {
-          console.log('Archive adjutant:', file.name);
+          this.messages.push({
+            id: this.messages.length + 1,
+            file: `Archivo enviado: ${file.name}`,
+          });
+
+          // Desplazar al último mensaje
+          this.$nextTick(() => {
+            const messageContent = document.querySelector('.message-content');
+            messageContent.scrollTop = messageContent.scrollHeight;
+          });
         }
       };
       input.click();
       this.showMenu = false;
     },
+    selectChat(name) {
+      this.activeChat = name;
+      this.messages = [];
+    },
+    openChat(contact) {
+      this.activeChat = contact; // Cambia el chat activo al contacto seleccionado
+      this.messages = contact.messages; // Carga los mensajes del contacto seleccionado
+    }
   },
 };
 </script>
@@ -84,7 +119,7 @@ export default {
 .message-panel {
   display: flex;
   border: 1px solid #ccc;
-  height: 400px;
+  height: 100vh;
   width: 100%;
 }
 
@@ -100,6 +135,11 @@ export default {
   align-items: center;
   padding: 10px;
   border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.contact:hover {
+  background-color: #ececec;
 }
 
 .contact img.avatar {
@@ -126,20 +166,25 @@ export default {
   flex-grow: 1;
   padding: 10px;
   background-color: #fff;
+  overflow-y: auto;
+  max-height: calc(100vh - 100px);
 }
 
 .message-content p {
   color: grey;
-  margin-top: 210px;
+  margin-top: 10px;
   margin-left: 10px;
+  overflow-y: auto;
 }
 
 .message-input {
   display: flex;
   align-items: center;
   padding: 10px;
-  border-top: 1px solid #ccc;
-  position: relative;
+  position: sticky;
+  bottom: 0;
+  background-color: #fff;
+  z-index: 10;
 }
 
 .message-input i {
@@ -181,19 +226,5 @@ export default {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-}
-
-.message-input button {
-  margin-left: 10px;
-  padding: 10px 20px;
-  background-color: black;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.message-input button:hover {
-  background-color: blue;
 }
 </style>
