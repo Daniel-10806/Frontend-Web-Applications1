@@ -48,7 +48,7 @@ export default {
     return {
       newMessage: '',
       messages: [],
-      activeChat: { id: null, name: '' }, // Añadimos la estructura del chat activo
+      activeChat: { id: null, name: '' }, // Add the structure of the active chat
       contacts: [
         { id: 1, name: 'Fidel', avatar: 'src/assets/images/avatar1.jpeg', messages: [{ id: 1, text: 'Hello Fidel!' }] },
         { id: 2, name: 'Monica', avatar: 'src/assets/images/avatar2.jpg', messages: [{ id: 1, text: 'Hi Monica!' }] },
